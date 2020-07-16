@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:math_expressions/math_expressions.dart';
 
 void main() {
   runApp(Calculator());
@@ -28,7 +29,48 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
   double equationFontSize = 38.0;
   double resultFontSize = 48.0;
 
-  buttonPressed(String buttonText) {}
+  buttonPressed(String buttonText) {
+    setState(() {
+      if (buttonText == "C") {
+        equation = "0";
+        result = "0";
+        equationFontSize = 38.0;
+        resultFontSize = 48.0;
+      } else if (buttonText == "⌫") {
+        equationFontSize = 48.0;
+        resultFontSize = 38.0;
+        equation = equation.substring(0, equation.length - 1);
+        if (equation == "") {
+          equation = "0";
+        }
+      } else if (buttonText == "=") {
+        equationFontSize = 38.0;
+        resultFontSize = 48.0;
+
+        expression = equation;
+        expression = expression.replaceAll('×', '*');
+        expression = expression.replaceAll('÷', '/');
+
+        try {
+          Parser p = new Parser();
+          Expression exp = p.parse(expression);
+
+          ContextModel cm = ContextModel();
+          result = '${exp.evaluate(EvaluationType.REAL, cm)}';
+        } catch (e) {
+          result = "Error";
+        }
+      } else {
+        equationFontSize = 38.0;
+        resultFontSize = 48.0;
+        if (equation == "0") {
+          equation = buttonText;
+        } else {
+          equation = equation + buttonText;
+        }
+      }
+    });
+  }
 
   Widget buildButton(
       String buttonText, double buttonHeight, Color buttonColor) {
@@ -45,7 +87,7 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
             child: Text(
               buttonText,
               style: TextStyle(
-                  fontSize: 30.0,
+                  fontSize: 25.0,
                   fontWeight: FontWeight.normal,
                   color: Colors.white),
             )));
@@ -54,17 +96,19 @@ class _SimpleCalculatorState extends State<SimpleCalculator> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text('Simple Calculator'), centerTitle: true),
+        appBar: AppBar(title: Text('Calculator'), centerTitle: true),
         body: Column(
           children: <Widget>[
             Container(
                 alignment: Alignment.centerRight,
                 padding: EdgeInsets.fromLTRB(10, 20, 10, 0),
-                child: Text("0", style: TextStyle(fontSize: 38.0))),
+                child: Text(equation,
+                    style: TextStyle(fontSize: equationFontSize))),
             Container(
                 alignment: Alignment.centerRight,
                 padding: EdgeInsets.fromLTRB(10, 30, 10, 0),
-                child: Text("0", style: TextStyle(fontSize: 48.0))),
+                child:
+                    Text(result, style: TextStyle(fontSize: resultFontSize))),
             Expanded(
               child: Divider(),
             ),
